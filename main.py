@@ -16,28 +16,52 @@ class Acoes:
         options.add_argument("--disable-extensions")
         self.driver = webdriver.Chrome(executable_path='driver/chromedriver.exe', options=options)
 
-    def navegar(self, ativo):
-        self.driver.get("https://www.fundsexplorer.com.br/funds/" + ativo)
+    def navegarfiis(self, ativo):
+        self.driver.get("https://fiis.com.br/" + ativo)
 
-    def valorPatrimonial(self):
-        valor = self.driver.find_element_by_xpath("//*[@id='main-indicators-carousel']/div/div/div[5]/span[2]").text
-        valorformatado = valor.replace("R$ ", "")
+    def navegarclubefii(self, ativo):
+        self.driver.get("https://www.clubefii.com.br/fiis/"+ativo)
+
+    def valorPatrimonial(self, ativo):
+        self.navegarfiis(ativo)
+        valor = self.driver.find_element_by_xpath("//*[@id='informations--indexes']/div[4]/span[1]").text
+        valorformatado = valor.replace("R$", "")
         return valorformatado
 
-    def dividendyield(self):
-        valor = self.driver.find_element_by_xpath("//*[@id='main-indicators-carousel']/div/div/div[2]/span[2]").text
-        valorformatado = valor.replace("R$ ", "")
+    def dividendyield(self, ativo):
+        self.navegarfiis(ativo)
+        valor = self.driver.find_element_by_xpath("//*[@id='informations--indexes']/div[2]/span[1]").text
+        valorformatado = valor.replace("R$", "")
         return valorformatado
+
+    def tipoFundo(self, ativo):
+        self.navegarfiis(ativo)
+        valor = self.driver.find_element_by_xpath("//*[@id='informations--basic']/div[1]/div[2]/span[2]").text
+        return valor
+
+    def vacancia(self, ativo):
+        self.navegarclubefii(ativo)
+        try:
+            vacancia = self.driver.find_element_by_xpath("//*[@id='vacancia']/div[2]/div[1]/strong[2]").text
+            data_ref = self.driver.find_element_by_xpath("//*[@id='vacancia']/span").text
+            return vacancia, data_ref
+        except:
+            vacancia = "N/A"
+            data_ref = "N/A"
+            return vacancia, data_ref
 
 inicio = Acoes()
-ativos = ["HGLG11", "XPML11"]
+ativos = ["HGLG11", "XPML11", "MXRF11"]
 
 arquivoCsv = pd.DataFrame
 
 for ativo in ativos:
     print(ativo)
-    inicio.navegar(ativo)
-    valorPatrimonial = inicio.valorPatrimonial()
+    valorPatrimonial = inicio.valorPatrimonial(ativo)
     print(valorPatrimonial)
-    ultimoDy = inicio.dividendyield()
+    ultimoDy = inicio.dividendyield(ativo)
     print(ultimoDy)
+    tipofundo = inicio.tipoFundo(ativo)
+    print(tipofundo)
+    vacancia = inicio.vacancia(ativo)
+    print(vacancia)
